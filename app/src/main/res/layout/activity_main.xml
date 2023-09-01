@@ -6,13 +6,70 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
+<!--    <TextView-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="Hello World!"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent" />-->
+
+
+    <androidx.gridlayout.widget.GridLayout
+        android:id="@+id/gridLayout01"
+        android:layout_width="400dp"
+        android:layout_height="480dp"
+        android:layout_gravity="center"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="32dp"
+        app:columnCount="10"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.74"
+        app:rowCount="12">
+
+
+        <TextView
+            android:id="@+id/textView00"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginBottom="2dp"
+            android:width="40dp"
+            android:height="40dp"
+            android:text="@string/flag"
+            android:textAlignment="center"
+            android:textSize="32sp"
+            app:layout_column="0"
+            app:layout_row="0" />
+
+        <TextView
+            android:id="@+id/textView01"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginBottom="2dp"
+            android:width="40dp"
+            android:height="40dp"
+            android:text="@string/mine"
+            android:textAlignment="center"
+            android:textSize="32sp"
+            app:layout_column="1"
+            app:layout_row="0" />
+
+
+
+    </androidx.gridlayout.widget.GridLayout>
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
