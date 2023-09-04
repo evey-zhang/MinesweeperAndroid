@@ -78,4 +78,6 @@ public class Cell {
     public void setAlreadyClicked(boolean alreadyClicked) {
         this.alreadyClicked = alreadyClicked;
     }
+
+
 }
