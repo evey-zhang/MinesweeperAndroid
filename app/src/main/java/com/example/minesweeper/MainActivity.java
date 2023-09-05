@@ -51,11 +51,11 @@ public class MainActivity extends AppCompatActivity {
                 TextView tv = new TextView(this);
                 tv.setHeight(dpToPixel(30));
                 tv.setWidth(dpToPixel(30));
-                tv.setTextSize(10);//dpToPixel(32) )
+                tv.setTextSize(15);//dpToPixel(32) )
                 tv.setText(String.valueOf(i)+String.valueOf(j));
                 tv.setTextAlignment(TextView.TEXT_ALIGNMENT_CENTER);
-                tv.setTextColor(Color.BLACK);
-                tv.setBackgroundColor(Color.GRAY);
+                tv.setTextColor(Color.LTGRAY);
+                tv.setBackgroundColor(Color.parseColor("lime"));
                 tv.setOnClickListener(this::onClickTV);
 
                 GridLayout.LayoutParams lp = new GridLayout.LayoutParams();
@@ -75,6 +75,8 @@ public class MainActivity extends AppCompatActivity {
         placeMines();
         searchAdjacent();
         System.out.println(printCells(cellArr));
+        BFScells(cellArr.get(0));
+        System.out.println(printCells(cellArr));
     }
     private int findIndexOfCellTextView(TextView tv) {
         for (int n=0; n<cellArr.size(); n++) {
@@ -85,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
     }
     //FUNCTION TO INITIALIZE MINES RANDOMLY
     public void placeMines(){
+        //NOTE NEED TO ACCOUNT TO PREVENT TWO SAME MINES
         Random randomGenerator = new Random();
         for (int i = 0; i < 4 ; i++){
             int randInt = randomGenerator.nextInt(120);
@@ -108,9 +111,10 @@ public class MainActivity extends AppCompatActivity {
                     int currCol = col + c;
                     int currRow = row + r;
 
-                    if (currRow >=0 && currRow < ROW_COUNT&& currCol >=0 && currCol < COLUMN_COUNT ){
-                        if (cellArr.get(index).isMine() && currRow*COLUMN_COUNT+currCol!=index) {
-                            int newIndex = currRow * COLUMN_COUNT+ currCol;
+                    if ((currRow >=0 && currRow < ROW_COUNT)&& (currCol >=0 && currCol < COLUMN_COUNT) ){
+                        int newIndex = currRow * COLUMN_COUNT+ currCol;
+                        if (cellArr.get(index).isMine() && !cellArr.get(newIndex).isMine()) {
+
                             int prevMines = cellArr.get(newIndex).getAdjacentMines();
                             cellArr.get(newIndex).setAdjacentMines(prevMines + 1);
                         }
@@ -134,7 +138,6 @@ public class MainActivity extends AppCompatActivity {
     }
     //when non-mine, non
     public void BFScells(Cell clickedCell){
-
         //input: user-pressed cell
         //search 8 directions from input cell. if cell has no adjacent mines, add to queue to be searched again
         Queue<Cell> cellQueue = new LinkedList<>();
@@ -144,34 +147,46 @@ public class MainActivity extends AppCompatActivity {
         cellQueue.add(clickedCell);
         visited[clickedCell.getIndex()] = true;
 
-
         while (cellQueue.isEmpty() == false){
-            Cell currCell = cellQueue.element();
+            Cell currCell = cellQueue.remove();
             int index = currCell.getIndex();
             int row = index / COLUMN_COUNT;
             int col = index % COLUMN_COUNT;
-
 
             for (int r = -1; r <=1; r = r+1) {
                 for (int c = -1; c <= 1; c = c + 1) {
                     int currCol = col + c;
                     int currRow = row + r;
                     int newIndex = currRow * COLUMN_COUNT+ currCol;
-                    currCell = cellArr.get(newIndex);
 
                     if (currRow >=0 && currRow < ROW_COUNT && currCol >=0 && currCol < COLUMN_COUNT ) {
+                        currCell = cellArr.get(newIndex);
                         //check that element is not a mine and has not been visited
                         if (!currCell.isMine() && visited[newIndex]== false) {
-                            if (currCell.getAdjacentMines())
+                            //if acell has no adjacent mines
+                            if (currCell.getAdjacentMines() == 0){
+                                cellQueue.add(currCell);
+                            }
+                            //mark cell as visited
+                            visited[newIndex] = true;
+                            currCell.setAlreadyClicked(true);
                         }
-                    }
-                    //UNCOVER THIS CELL -> TO REVEAL
+                        //UNCOVER THIS CELL -> TO REVEAL
+                        TextView tv = currCell.getCellTV();
+                        tv.setBackgroundColor(Color.LTGRAY);
+                        if (currCell.getAdjacentMines() > 0){
+                            tv.setText(String.valueOf(currCell.getAdjacentMines()));
+                            tv.setTextColor(Color.DKGRAY);
+                        }
 
+//
+
+                        //IF cell has adjacent mines: show adjacent mines -> turn green
+                        //if cell does not have adjacent mines, show no numbers -> turn green
+                    }
                 }
             }
         }
-
-
     }
 
 
@@ -180,13 +195,14 @@ public class MainActivity extends AppCompatActivity {
         int n = findIndexOfCellTextView(tv);
         int i = n/COLUMN_COUNT;
         int j = n%COLUMN_COUNT;
-        tv.setText(String.valueOf(i)+String.valueOf(j));
-        if (tv.getCurrentTextColor() == Color.GRAY) {
-            tv.setTextColor(Color.GREEN);
-            tv.setBackgroundColor(Color.parseColor("lime"));
-        }else {
-            tv.setTextColor(Color.GRAY);
-            tv.setBackgroundColor(Color.LTGRAY);
-        }
+        BFScells(cellArr.get(n));
+//        tv.setText(String.valueOf(i)+String.valueOf(j));
+//        if (tv.getCurrentTextColor() == Color.GRAY) {
+//            tv.setTextColor(Color.GREEN);
+//            tv.setBackgroundColor(Color.parseColor("lime"));
+//        }else {
+//            tv.setTextColor(Color.GRAY);
+//            tv.setBackgroundColor(Color.LTGRAY);
+//        }
     }
 }
