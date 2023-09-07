@@ -6,6 +6,7 @@ import androidx.gridlayout.widget.GridLayout;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -30,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Cell> mines;
     private boolean flagMode;
     private int flagsLeft = 4;
+    private int clock = 0;
+    private boolean running = false;
     //CREATE TEXTVIEW OBJECTS FOR IMAGES
 
     private int dpToPixel(int dp) {
@@ -83,6 +86,8 @@ public class MainActivity extends AppCompatActivity {
         }
         placeMines();
         searchAdjacent();
+        running = true;
+        runTimer();
         System.out.println(printCells(cellArr));
 
     }
@@ -223,6 +228,24 @@ public class MainActivity extends AppCompatActivity {
         flagMode = false;
     }
 
+    private void runTimer() {
+        final TextView timeView = (TextView) findViewById(R.id.time);
+        final Handler handler = new Handler();
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                int seconds = clock%60;
+                String time = Integer.toString(seconds);
+                timeView.setText(time);
+
+                if (running) {
+                    clock++;
+                }
+                handler.postDelayed(this, 1000);
+            }
+        });
+    }
 
     public void onClickTV(View view){
         TextView tv = (TextView) view;
@@ -258,9 +281,6 @@ public class MainActivity extends AppCompatActivity {
                 flag_number.setText(Integer.toString(flagsLeft));
                 currCell.setFlagged(false);
             }
-
-
-
         }
 
 

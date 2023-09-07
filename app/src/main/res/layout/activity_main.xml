@@ -28,9 +28,10 @@
         app:columnCount="10"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.666"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.74"
+        app:layout_constraintVertical_bias="0.789"
         app:rowCount="12">
 
 
@@ -97,7 +98,7 @@
         android:textSize="32sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.75"
+        app:layout_constraintHorizontal_bias="0.60"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.118" />
@@ -132,6 +133,20 @@
         app:layout_constraintVertical_bias="0.117"
         tools:layout_editor_absoluteX="133dp"
         tools:layout_editor_absoluteY="87dp" />
+
+    <TextView
+        android:id="@+id/time"
+        android:layout_width="29dp"
+        android:layout_height="33dp"
+        android:text="0"
+        android:textSize="25sp"
+
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.751"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.118" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
