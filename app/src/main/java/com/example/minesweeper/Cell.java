@@ -10,6 +10,7 @@ public class Cell {
     private int adjacentMines;
     private boolean isMine;
     private boolean alreadyClicked;
+    private boolean flagged;
 
     //default instantiation
     public Cell(){
@@ -18,16 +19,18 @@ public class Cell {
         adjacentMines = 0;
         isMine = false;
         alreadyClicked = false;
+        flagged = false;
 
     }
 
     //user changed instantiation
-    public Cell(TextView tv, int i, int minesNextTO, boolean m, boolean aC){
+    public Cell(TextView tv, int i, int minesNextTO, boolean m, boolean aC, boolean f){
         cellTV = tv;
         index = i;
         adjacentMines = minesNextTO;
         isMine = isMine ;
         alreadyClicked = aC;
+        flagged= f;
 
     }
 
@@ -37,6 +40,7 @@ public class Cell {
         adjacentMines = 0;
         isMine = false;
         alreadyClicked = false;
+        flagged = false;
 
     }
     public TextView getCellTV() {
@@ -79,5 +83,11 @@ public class Cell {
         this.alreadyClicked = alreadyClicked;
     }
 
+    public boolean isFlagged() {
+        return flagged;
+    }
 
+    public void setFlagged(boolean flagged) {
+        this.flagged = flagged;
+    }
 }

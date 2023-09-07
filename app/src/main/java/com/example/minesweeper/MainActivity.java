@@ -10,6 +10,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
@@ -26,23 +28,30 @@ public class MainActivity extends AppCompatActivity {
     //private ArrayList<Integer> adjacentMines; // number of mines next to square
     private ArrayList<Cell> cellArr;
     private ArrayList<Cell> mines;
+    private boolean flagMode;
+    private int flagsLeft = 4;
+    //CREATE TEXTVIEW OBJECTS FOR IMAGES
 
     private int dpToPixel(int dp) {
         float density = Resources.getSystem().getDisplayMetrics().density;
         return Math.round(dp * density);
     }
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        //array to store each cell
-        //cell_tvs = new ArrayList<TextView>();
         cellArr = new ArrayList<Cell>();
         mines = new ArrayList<Cell>();
-        //adjacentMines = new ArrayList<Integer>();
+
+        TextView pick = (TextView)findViewById(R.id.pick);
+        TextView flag_bottom = (TextView)findViewById(R.id.flag_bottom);
+        flag_bottom.setVisibility(View.INVISIBLE);
+        pick.setVisibility((View.VISIBLE));
+        flagMode=false;
+        pick.setOnClickListener(this::onClickPick);
+        flag_bottom.setOnClickListener(this::onClickFlag);
+
 
         //make the grid
         GridLayout grid = (GridLayout) findViewById(R.id.gridLayout01);
@@ -75,8 +84,7 @@ public class MainActivity extends AppCompatActivity {
         placeMines();
         searchAdjacent();
         System.out.println(printCells(cellArr));
-        BFScells(cellArr.get(0));
-        System.out.println(printCells(cellArr));
+
     }
     private int findIndexOfCellTextView(TextView tv) {
         for (int n=0; n<cellArr.size(); n++) {
@@ -121,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
+
         }
     }
 
@@ -146,6 +155,10 @@ public class MainActivity extends AppCompatActivity {
         //Queue the first index
         cellQueue.add(clickedCell);
         visited[clickedCell.getIndex()] = true;
+        clickedCell.setAlreadyClicked(true);
+        clickedCell.getCellTV().setText(String.valueOf(clickedCell.getAdjacentMines()));
+        clickedCell.getCellTV().setTextColor(Color.DKGRAY);
+
 
         while (cellQueue.isEmpty() == false){
             Cell currCell = cellQueue.remove();
@@ -170,6 +183,10 @@ public class MainActivity extends AppCompatActivity {
                             //mark cell as visited
                             visited[newIndex] = true;
                             currCell.setAlreadyClicked(true);
+
+                            TextView tv = currCell.getCellTV();
+                            tv.setText(String.valueOf(currCell.getAdjacentMines()));
+                            tv.setTextColor(Color.DKGRAY);
                         }
                         //UNCOVER THIS CELL -> TO REVEAL
                         TextView tv = currCell.getCellTV();
@@ -188,14 +205,65 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+    public void onClickPick(View view){
+        TextView pick = (TextView) view;
+        TextView flag_bottom = (TextView)findViewById(R.id.flag_bottom);
+
+        pick.setVisibility(View.INVISIBLE);
+        flag_bottom.setVisibility(View.VISIBLE);
+        flagMode = true;
+    }
+    public void onClickFlag(View view){
+        TextView flag = (TextView) view;
+        TextView pick = (TextView)findViewById(R.id.pick);
+
+
+        pick.setVisibility(View.VISIBLE);
+        flag.setVisibility(View.INVISIBLE);
+        flagMode = false;
+    }
 
 
     public void onClickTV(View view){
         TextView tv = (TextView) view;
+        TextView flag_number = (TextView)findViewById(R.id.flag_number);
+
         int n = findIndexOfCellTextView(tv);
         int i = n/COLUMN_COUNT;
         int j = n%COLUMN_COUNT;
-        BFScells(cellArr.get(n));
+        Cell currCell = cellArr.get(n);
+
+
+        //IN PICK MODE:
+        if (!flagMode){
+            if (currCell.isMine() ){
+                //game ends
+            }
+            else {
+                BFScells(cellArr.get(n));
+            }
+        }
+        //In Flag Mode:
+        else if (flagMode ){
+
+            if (flagsLeft > 0 && !currCell.isFlagged()){
+                tv.setText(R.string.flag);
+                flagsLeft -= 1;
+                flag_number.setText(Integer.toString(flagsLeft));
+                currCell.setFlagged(true);
+            }
+            else if (currCell.isFlagged()){
+                tv.setText(" ");
+                flagsLeft += 1;
+                flag_number.setText(Integer.toString(flagsLeft));
+                currCell.setFlagged(false);
+            }
+
+
+
+        }
+
+
 //        tv.setText(String.valueOf(i)+String.valueOf(j));
 //        if (tv.getCurrentTextColor() == Color.GRAY) {
 //            tv.setTextColor(Color.GREEN);
