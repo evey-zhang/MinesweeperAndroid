@@ -3,15 +3,15 @@ package com.example.minesweeper;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.gridlayout.widget.GridLayout;
 
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -29,7 +29,8 @@ public class MainActivity extends AppCompatActivity {
     //private ArrayList<Integer> adjacentMines; // number of mines next to square
     private ArrayList<Cell> cellArr;
     private ArrayList<Cell> mines;
-    private boolean flagMode;
+    private ArrayList<Cell> flaggedMines;
+     private boolean flagMode;
     private int flagsLeft = 4;
     private int clock = 0;
     private boolean running = false;
@@ -46,8 +47,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         cellArr = new ArrayList<Cell>();
         mines = new ArrayList<Cell>();
+        flaggedMines = new ArrayList<Cell>();
 
-        TextView pick = (TextView)findViewById(R.id.pick);
+        TextView pick = findViewById(R.id.pick);
         TextView flag_bottom = (TextView)findViewById(R.id.flag_bottom);
         flag_bottom.setVisibility(View.INVISIBLE);
         pick.setVisibility((View.VISIBLE));
@@ -81,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
                 currCell.setIndex(COLUMN_COUNT * i+j);
                 //System.out.println(COLUMN_COUNT * i + j);
                 cellArr.add(currCell);
-                //adjacentMines.add(0);
+
             }
         }
         placeMines();
@@ -89,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
         running = true;
         runTimer();
         System.out.println(printCells(cellArr));
+
 
     }
     private int findIndexOfCellTextView(TextView tv) {
@@ -193,13 +196,17 @@ public class MainActivity extends AppCompatActivity {
                             tv.setText(String.valueOf(currCell.getAdjacentMines()));
                             tv.setTextColor(Color.DKGRAY);
                         }
-                        //UNCOVER THIS CELL -> TO REVEAL
-                        TextView tv = currCell.getCellTV();
-                        tv.setBackgroundColor(Color.LTGRAY);
-                        if (currCell.getAdjacentMines() > 0){
-                            tv.setText(String.valueOf(currCell.getAdjacentMines()));
-                            tv.setTextColor(Color.DKGRAY);
+                        if (!currCell.isMine()){
+                            //UNCOVER THIS CELL -> TO REVEAL
+                            TextView tv = currCell.getCellTV();
+                            tv.setBackgroundColor(Color.LTGRAY);
+                            if (currCell.getAdjacentMines() > 0){
+                                tv.setText(String.valueOf(currCell.getAdjacentMines()));
+                                tv.setTextColor(Color.DKGRAY);
+                            }
+
                         }
+
 
 //
 
@@ -250,6 +257,9 @@ public class MainActivity extends AppCompatActivity {
     public void onClickTV(View view){
         TextView tv = (TextView) view;
         TextView flag_number = (TextView)findViewById(R.id.flag_number);
+        LayoutInflater inflater = getLayoutInflater();
+        View layout = inflater.inflate(R.layout.activity_main2, null);
+        TextView gameEnd = layout.findViewById(R.id.GameEnded);
 
         int n = findIndexOfCellTextView(tv);
         int i = n/COLUMN_COUNT;
@@ -260,7 +270,17 @@ public class MainActivity extends AppCompatActivity {
         //IN PICK MODE:
         if (!flagMode){
             if (currCell.isMine() ){
-                //game ends
+                //game ends - LOSE
+                String message = "Game Ended! You have hit a mine. You lost the game in "
+                        + Integer.toString(clock%60)
+                        + " seconds.";
+                gameEnd.setText(message);
+                running = false;
+
+                //CHANGE SCREENS
+                Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+                startActivity(intent);
+
             }
             else {
                 BFScells(cellArr.get(n));
@@ -271,15 +291,34 @@ public class MainActivity extends AppCompatActivity {
 
             if (flagsLeft > 0 && !currCell.isFlagged()){
                 tv.setText(R.string.flag);
+                if(currCell.isMine()){
+                    flaggedMines.add(currCell);
+                }
                 flagsLeft -= 1;
                 flag_number.setText(Integer.toString(flagsLeft));
                 currCell.setFlagged(true);
+
             }
             else if (currCell.isFlagged()){
                 tv.setText(" ");
+                if(currCell.isMine()){
+                    flaggedMines.remove(currCell);
+                }
                 flagsLeft += 1;
                 flag_number.setText(Integer.toString(flagsLeft));
                 currCell.setFlagged(false);
+            }
+            if (flaggedMines.equals(mines)){
+                //game ends - WIN
+                String message = "Game Ended! You have found the mines. You won the game in "
+                        + Integer.toString(clock%60)
+                        + " seconds.";
+                gameEnd.setText(message);
+                running = false;
+                //CHANGE SCREENS
+                Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+                startActivity(intent);
+
             }
         }
 
