@@ -13,12 +13,15 @@ import android.view.View;
 import android.widget.TextView;
 
 
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
 
 
 import java.util.ArrayList;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
     //INSTANTIATION OF VARIABLES
@@ -34,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private int flagsLeft = 4;
     private int clock = 0;
     private boolean running = false;
+    private boolean won = false;
     //CREATE TEXTVIEW OBJECTS FOR IMAGES
 
     private int dpToPixel(int dp) {
@@ -105,8 +109,15 @@ public class MainActivity extends AppCompatActivity {
     public void placeMines(){
         //NOTE NEED TO ACCOUNT TO PREVENT TWO SAME MINES
         Random randomGenerator = new Random();
-        for (int i = 0; i < 4 ; i++){
+        Set<Integer> mineSet = new HashSet<Integer>();
+        while (mineSet.size() < 4){
             int randInt = randomGenerator.nextInt(120);
+            mineSet.add(randInt);
+        }
+        Integer[] mineArr = mineSet.toArray(new Integer[mineSet.size()]);
+
+        for (int i = 0; i < 4 ; i++){
+            int randInt = mineArr[i];
             System.out.println(randInt);
             //update cells to mines
             cellArr.get(randInt).setMine(true);
@@ -207,15 +218,15 @@ public class MainActivity extends AppCompatActivity {
 
                         }
 
-
-//
-
                         //IF cell has adjacent mines: show adjacent mines -> turn green
                         //if cell does not have adjacent mines, show no numbers -> turn green
                     }
                 }
             }
         }
+    }
+    public boolean getWon(){
+        return won;
     }
     public void onClickPick(View view){
         TextView pick = (TextView) view;
@@ -242,7 +253,7 @@ public class MainActivity extends AppCompatActivity {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                int seconds = clock%60;
+                int seconds = clock;
                 String time = Integer.toString(seconds);
                 timeView.setText(time);
 
@@ -254,7 +265,28 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void onClickTV(View view){
+    public boolean allFlagsFound (ArrayList<Cell> flags, ArrayList<Cell> mines){
+        ArrayList<Cell> minesCpy = new ArrayList<>();
+        minesCpy = mines;
+        if (flags.size() == minesCpy.size()){
+            for (int i = 0; i < flags.size(); i++){
+                for (int j = 0; j < minesCpy.size();j++){
+                    if (flags.get(i) == minesCpy.get(j)){
+                        minesCpy.remove(j);
+                        break;
+                    }
+                }
+            }
+            if (minesCpy.size() == 0){
+                return true;
+            }
+
+        }
+
+        return false;
+    }
+
+    public void onClickTV(View view) {
         TextView tv = (TextView) view;
         TextView flag_number = (TextView)findViewById(R.id.flag_number);
         LayoutInflater inflater = getLayoutInflater();
@@ -271,15 +303,20 @@ public class MainActivity extends AppCompatActivity {
         if (!flagMode){
             if (currCell.isMine() ){
                 //game ends - LOSE
-                String message = "Game Ended! You have hit a mine. You lost the game in "
-                        + Integer.toString(clock%60)
+                tv.setText(R.string.mine);
+                String message = "lost";
+                String toPrint = "Game Ended! You have hit a mine. You lost the game in "
+                        + Integer.toString(clock)
                         + " seconds.";
-                gameEnd.setText(message);
                 running = false;
+
 
                 //CHANGE SCREENS
                 Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+                intent.putExtra("win message", message);
+                intent.putExtra("toPrint", toPrint);
                 startActivity(intent);
+
 
             }
             else {
@@ -308,28 +345,21 @@ public class MainActivity extends AppCompatActivity {
                 flag_number.setText(Integer.toString(flagsLeft));
                 currCell.setFlagged(false);
             }
-            if (flaggedMines.equals(mines)){
+            if (allFlagsFound(flaggedMines,mines)){
                 //game ends - WIN
-                String message = "Game Ended! You have found the mines. You won the game in "
-                        + Integer.toString(clock%60)
-                        + " seconds.";
-                gameEnd.setText(message);
+                String message = "won";
+                String toPrint = "Game Ended! You have found the mines. You won the game in "
+                                                + Integer.toString(clock)
+                                                + " seconds.";
                 running = false;
                 //CHANGE SCREENS
                 Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+                intent.putExtra("win message", message);
+                intent.putExtra("toPrint", toPrint);
+
                 startActivity(intent);
 
             }
         }
-
-
-//        tv.setText(String.valueOf(i)+String.valueOf(j));
-//        if (tv.getCurrentTextColor() == Color.GRAY) {
-//            tv.setTextColor(Color.GREEN);
-//            tv.setBackgroundColor(Color.parseColor("lime"));
-//        }else {
-//            tv.setTextColor(Color.GRAY);
-//            tv.setBackgroundColor(Color.LTGRAY);
-//        }
     }
 }
