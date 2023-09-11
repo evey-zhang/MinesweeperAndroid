@@ -28,8 +28,6 @@ public class MainActivity extends AppCompatActivity {
     private static final int COLUMN_COUNT = 10;
     private static final int ROW_COUNT = 12;
 
-    //private ArrayList<Integer> cell_tvs;
-    //private ArrayList<Integer> adjacentMines; // number of mines next to square
     private ArrayList<Cell> cellArr;
     private ArrayList<Cell> mines;
     private ArrayList<Cell> flaggedMines;
@@ -37,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private int flagsLeft = 4;
     private int clock = 0;
     private boolean running = false;
-    private boolean won = false;
+    private boolean won = true;
     //CREATE TEXTVIEW OBJECTS FOR IMAGES
 
     private int dpToPixel(int dp) {
@@ -70,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
                 tv.setHeight(dpToPixel(30));
                 tv.setWidth(dpToPixel(30));
                 tv.setTextSize(15);//dpToPixel(32) )
-                tv.setText(String.valueOf(i)+String.valueOf(j));
+                //tv.setText(String.valueOf(i)+String.valueOf(j));
                 tv.setTextAlignment(TextView.TEXT_ALIGNMENT_CENTER);
                 tv.setTextColor(Color.LTGRAY);
                 tv.setBackgroundColor(Color.parseColor("lime"));
@@ -175,8 +173,11 @@ public class MainActivity extends AppCompatActivity {
         cellQueue.add(clickedCell);
         visited[clickedCell.getIndex()] = true;
         clickedCell.setAlreadyClicked(true);
-        clickedCell.getCellTV().setText(String.valueOf(clickedCell.getAdjacentMines()));
-        clickedCell.getCellTV().setTextColor(Color.DKGRAY);
+        if (clickedCell.getAdjacentMines() > 0){
+            clickedCell.getCellTV().setText(String.valueOf(clickedCell.getAdjacentMines()));
+            clickedCell.getCellTV().setTextColor(Color.DKGRAY);
+        }
+
 
 
         while (cellQueue.isEmpty() == false){
@@ -195,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
                         currCell = cellArr.get(newIndex);
                         //check that element is not a mine and has not been visited
                         if (!currCell.isMine() && visited[newIndex]== false) {
-                            //if acell has no adjacent mines
+                            //if a cell has no adjacent mines
                             if (currCell.getAdjacentMines() == 0){
                                 cellQueue.add(currCell);
                             }
@@ -204,8 +205,10 @@ public class MainActivity extends AppCompatActivity {
                             currCell.setAlreadyClicked(true);
 
                             TextView tv = currCell.getCellTV();
-                            tv.setText(String.valueOf(currCell.getAdjacentMines()));
-                            tv.setTextColor(Color.DKGRAY);
+                            if (currCell.getAdjacentMines() > 0){
+                                tv.setText(String.valueOf(currCell.getAdjacentMines()));
+                                tv.setTextColor(Color.DKGRAY);
+                            }
                         }
                         if (!currCell.isMine()){
                             //UNCOVER THIS CELL -> TO REVEAL
@@ -215,11 +218,7 @@ public class MainActivity extends AppCompatActivity {
                                 tv.setText(String.valueOf(currCell.getAdjacentMines()));
                                 tv.setTextColor(Color.DKGRAY);
                             }
-
                         }
-
-                        //IF cell has adjacent mines: show adjacent mines -> turn green
-                        //if cell does not have adjacent mines, show no numbers -> turn green
                     }
                 }
             }
@@ -240,7 +239,6 @@ public class MainActivity extends AppCompatActivity {
         TextView flag = (TextView) view;
         TextView pick = (TextView)findViewById(R.id.pick);
 
-
         pick.setVisibility(View.VISIBLE);
         flag.setVisibility(View.INVISIBLE);
         flagMode = false;
@@ -249,14 +247,12 @@ public class MainActivity extends AppCompatActivity {
     private void runTimer() {
         final TextView timeView = (TextView) findViewById(R.id.time);
         final Handler handler = new Handler();
-
         handler.post(new Runnable() {
             @Override
             public void run() {
                 int seconds = clock;
                 String time = Integer.toString(seconds);
                 timeView.setText(time);
-
                 if (running) {
                     clock++;
                 }
@@ -280,9 +276,7 @@ public class MainActivity extends AppCompatActivity {
             if (minesCpy.size() == 0){
                 return true;
             }
-
         }
-
         return false;
     }
 
@@ -297,27 +291,41 @@ public class MainActivity extends AppCompatActivity {
         int i = n/COLUMN_COUNT;
         int j = n%COLUMN_COUNT;
         Cell currCell = cellArr.get(n);
-
-
+        //SWITCHING TO RESULT PAGE -> LOST
+        if (!won && running == false){
+            //CHANGE SCREENS
+            String message = "lost";
+            String toPrint = "Game Ended! You have hit a mine. You lost the game in "
+                    + Integer.toString(clock)
+                    + " seconds.";
+            Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+            intent.putExtra("win message", message);
+            intent.putExtra("toPrint", toPrint);
+            startActivity(intent);
+        }
+        //SWITCHING TO RESULT PAGE -> WON
+        if (won && running == false){
+            //CHANGE SCREENS
+            String message = "won";
+            String toPrint = "Game Ended! You have found the mines. You won the game in "
+                    + Integer.toString(clock)
+                    + " seconds.";
+            Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+            intent.putExtra("win message", message);
+            intent.putExtra("toPrint", toPrint);
+            startActivity(intent);
+        }
         //IN PICK MODE:
-        if (!flagMode){
+        else if (!flagMode){
             if (currCell.isMine() ){
                 //game ends - LOSE
                 tv.setText(R.string.mine);
-                String message = "lost";
-                String toPrint = "Game Ended! You have hit a mine. You lost the game in "
-                        + Integer.toString(clock)
-                        + " seconds.";
+                for (int x = 0; x < mines.size() ; x++){
+                    TextView currTv = mines.get(x).getCellTV();
+                    currTv.setText(R.string.mine);
+                }
                 running = false;
-
-
-                //CHANGE SCREENS
-                Intent intent = new Intent(MainActivity.this, MainActivity2.class);
-                intent.putExtra("win message", message);
-                intent.putExtra("toPrint", toPrint);
-                startActivity(intent);
-
-
+                won = false;
             }
             else {
                 BFScells(cellArr.get(n));
@@ -325,7 +333,6 @@ public class MainActivity extends AppCompatActivity {
         }
         //In Flag Mode:
         else if (flagMode ){
-
             if (flagsLeft > 0 && !currCell.isFlagged()){
                 tv.setText(R.string.flag);
                 if(currCell.isMine()){
@@ -345,20 +352,11 @@ public class MainActivity extends AppCompatActivity {
                 flag_number.setText(Integer.toString(flagsLeft));
                 currCell.setFlagged(false);
             }
+            //CHECK IF WON
             if (allFlagsFound(flaggedMines,mines)){
                 //game ends - WIN
-                String message = "won";
-                String toPrint = "Game Ended! You have found the mines. You won the game in "
-                                                + Integer.toString(clock)
-                                                + " seconds.";
+                won = true;
                 running = false;
-                //CHANGE SCREENS
-                Intent intent = new Intent(MainActivity.this, MainActivity2.class);
-                intent.putExtra("win message", message);
-                intent.putExtra("toPrint", toPrint);
-
-                startActivity(intent);
-
             }
         }
     }
