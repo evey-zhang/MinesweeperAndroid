@@ -263,7 +263,8 @@ public class MainActivity extends AppCompatActivity {
 
     public boolean allFlagsFound (ArrayList<Cell> flags, ArrayList<Cell> mines){
         ArrayList<Cell> minesCpy = new ArrayList<>();
-        minesCpy = mines;
+        minesCpy.addAll(mines);
+        //minesCpy = mines;
         if (flags.size() == minesCpy.size()){
             for (int i = 0; i < flags.size(); i++){
                 for (int j = 0; j < minesCpy.size();j++){
@@ -355,8 +356,13 @@ public class MainActivity extends AppCompatActivity {
             //CHECK IF WON
             if (allFlagsFound(flaggedMines,mines)){
                 //game ends - WIN
+                for (int x = 0; x < mines.size() ; x++){
+                    TextView currTv = mines.get(x).getCellTV();
+                    currTv.setText(R.string.mine);
+                }
                 won = true;
                 running = false;
+
             }
         }
     }
