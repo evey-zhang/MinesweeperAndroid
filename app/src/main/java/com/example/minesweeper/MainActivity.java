@@ -173,11 +173,18 @@ public class MainActivity extends AppCompatActivity {
         cellQueue.add(clickedCell);
         visited[clickedCell.getIndex()] = true;
         clickedCell.setAlreadyClicked(true);
+
         if (clickedCell.getAdjacentMines() > 0){
+            if (clickedCell.getCellTV().getText().toString().equals(getString(R.string.flag))){
+                TextView flag_number = (TextView)findViewById(R.id.flag_number);
+                flagsLeft += 1;
+                flag_number.setText(Integer.toString(flagsLeft));
+                clickedCell.setFlagged(false);
+
+            }
             clickedCell.getCellTV().setText(String.valueOf(clickedCell.getAdjacentMines()));
             clickedCell.getCellTV().setTextColor(Color.DKGRAY);
         }
-
 
 
         while (cellQueue.isEmpty() == false){
@@ -205,15 +212,25 @@ public class MainActivity extends AppCompatActivity {
                             currCell.setAlreadyClicked(true);
 
                             TextView tv = currCell.getCellTV();
+                            //if flagged square is getting mined, must return the flag
+                            if (tv.getText().toString().equals(getString(R.string.flag))){
+                                TextView flag_number = (TextView)findViewById(R.id.flag_number);
+                                flagsLeft += 1;
+                                flag_number.setText(Integer.toString(flagsLeft));
+                                currCell.setFlagged(false);
+
+                            }
                             if (currCell.getAdjacentMines() > 0){
                                 tv.setText(String.valueOf(currCell.getAdjacentMines()));
                                 tv.setTextColor(Color.DKGRAY);
+
                             }
                         }
                         if (!currCell.isMine()){
                             //UNCOVER THIS CELL -> TO REVEAL
                             TextView tv = currCell.getCellTV();
                             tv.setBackgroundColor(Color.LTGRAY);
+
                             if (currCell.getAdjacentMines() > 0){
                                 tv.setText(String.valueOf(currCell.getAdjacentMines()));
                                 tv.setTextColor(Color.DKGRAY);
@@ -280,6 +297,17 @@ public class MainActivity extends AppCompatActivity {
         }
         return false;
     }
+    public boolean allCellsRevealed (){
+        Cell currCell;
+        for (int i = 0; i < cellArr.size(); i++){
+            currCell = cellArr.get(i);
+            if (!currCell.isAlreadyClicked() && !currCell.isMine()){
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     public void onClickTV(View view) {
         TextView tv = (TextView) view;
@@ -345,25 +373,33 @@ public class MainActivity extends AppCompatActivity {
 
             }
             else if (currCell.isFlagged()){
-                tv.setText(" ");
+
+                if ((currCell.getAdjacentMines() > 0) && currCell.isAlreadyClicked()){
+                    tv.setText(String.valueOf(currCell.getAdjacentMines()));
+                    tv.setTextColor(Color.DKGRAY);
+                }
+                else{
+                    tv.setText(" ");
+                }
                 if(currCell.isMine()){
                     flaggedMines.remove(currCell);
                 }
                 flagsLeft += 1;
+
                 flag_number.setText(Integer.toString(flagsLeft));
                 currCell.setFlagged(false);
             }
-            //CHECK IF WON
-            if (allFlagsFound(flaggedMines,mines)){
-                //game ends - WIN
-                for (int x = 0; x < mines.size() ; x++){
-                    TextView currTv = mines.get(x).getCellTV();
-                    currTv.setText(R.string.mine);
-                }
-                won = true;
-                running = false;
-
+        }
+        //CHECK IF WON
+        if (allFlagsFound(flaggedMines,mines) && allCellsRevealed()){
+            //game ends - WIN
+            for (int x = 0; x < mines.size() ; x++){
+                TextView currTv = mines.get(x).getCellTV();
+                currTv.setText(R.string.mine);
             }
+            won = true;
+            running = false;
+
         }
     }
 }
